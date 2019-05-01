@@ -13,6 +13,20 @@ a:visited {
     color:#004d99
 }
 
+.inline_child {
+    display: inline-block;
+}
+
+.form_container {
+    width: 360px;
+    clear: both;
+}
+
+.form_container input {
+    width: 100%;
+    clear: both;
+}
+
 .error {
-    color: #4d0099
+    color: #ffa64d
 }

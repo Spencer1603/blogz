@@ -5,10 +5,19 @@
         <title>{{ site_title }}</title>
     </head>
     <body>
+        <div class='parent'>
+            <div class="child inline_child"><a href="/">Home</a> | <a href="/blog">All Blogs</a> | <a href="/newpost">Make a New Post</a></div><div class="child inline_child"><a href="/logout">Logout</a> | <a href="/login">Login</a></div>
+        </div>
 
-        <a href="/">Home</a> | <a href="/newpost">Make a New Post</a>
+        {% with messages = get_flashed_messages() %}
+            <ul>
+                {% for message in messages %}
+                    <li class="error">{{message}}</li>
+                {% endfor %}
+            </ul>
+        {% endwith %}
+        
         {% block content %}
         {% endblock %}
-
     </body>
 </html>
