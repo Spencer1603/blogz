@@ -15,7 +15,7 @@ app.secret_key = 'iVt7IDUZnCP28HjQYgDa5'
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(120))
+    pw_hash = db.Column(db.String(120))
     blogs = db.relationship('Blog', backref='owner')
        
     def __init__(self, username, password):
@@ -37,18 +37,36 @@ class Blog(db.Model):
         self.owner = owner
 
 
+@app.route('/', methods=['GET'])
+def index():
+    if "user" in request.args:
+        user_id = request.args.get("user")
+        user = User.query.filter_by(id=user_id).first()
+        user_blogs = Blog.query.filter_by(owner_id=user.id)
+        return render_template('dynamic_index.html', 
+            site_title="Posts from {0}".format(user.username), 
+            user_blogs=user_blogs, user=user)
+        
+    else:   
+        users = User.query.all()
+        return render_template('index.html', site_title="Home Page", 
+            users=users)
+
 @app.route('/blog', methods=['GET'])
 def blog():
     if "id" in request.args:
         blog_id = request.args.get("id")
         blog = Blog.query.filter_by(id=blog_id).first()
+        user_id = blog.owner_id
+        user = User.query.filter_by(id=user_id).first()
         return render_template('dynamic_blog.html', site_title="Blog post", 
-            blog=blog)
+            blog=blog, user=user)
         
     else:   
         blogs = Blog.query.all()
+        users = User.query.all()
         return render_template('blog.html', site_title="Blog Listings", 
-            blogs=blogs)
+            blogs=blogs, users=users)
 
 
 @app.route('/newpost', methods=['GET', 'POST'])
@@ -56,7 +74,8 @@ def newpost():
     if request.method == 'POST':
         blog_title = request.form['blog_title']
         blog_body = request.form['blog_body']
-        #TODO: get the current user in session
+        username = session['username']
+        current_user = User.query.filter_by(username=username).first()
 
         title_error = ""
         body_error = ""
@@ -93,7 +112,7 @@ def require_login():
 @app.route('/logout')
 def logout():
     del session['username']
-    return redirect('/')
+    return redirect('/blog')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -130,7 +149,7 @@ def signup():
         if password != verify:
             flash('Passwords do not match', 'error')
 
-        if len(username) > 3:
+        if len(username) < 3:
             flash('Invalid username', 'error')
 
         existing_user = User.query.filter_by(username=username).first()
