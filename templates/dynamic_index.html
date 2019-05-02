@@ -3,12 +3,12 @@
 {% block content %}
 
     {% for blog in user_blogs %}
-        <a href="/blog?id={{blog.id}}"><h2>{{blog.title}}</h2></a>
+        <a href="./blog?id={{blog.id}}"><h2>{{blog.title}}</h2></a>
         <p>{{blog.body}}</p>
         
-        <!–– dynamically display username -->
-        <h6>written by <a href="/?user={{blog.owner_id}}">{{user.username}}</a></h6>
-        <hr />
+        {% if user.id == blog.owner_id %}
+            <h6>written by <a href="./?user={{user.id}}">{{user.username}}</a></h6>
+        {% endif %}
     {% endfor %}
 
 {% endblock %}
