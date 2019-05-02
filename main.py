@@ -37,6 +37,8 @@ class Blog(db.Model):
         self.owner = owner
 
 
+#if a user has requested to see a particular user's posts, shows only
+#those posts; if this request has not been made, shows all users
 @app.route('/', methods=['GET'])
 def index():
     if "user" in request.args:
@@ -52,6 +54,9 @@ def index():
         return render_template('index.html', site_title="Home Page", 
             users=users)
 
+
+#if a user has requested to see a particular post, shows only
+#those posts; if this request has not been made, shows all posts
 @app.route('/blog', methods=['GET'])
 def blog():
     if "id" in request.args:
@@ -69,6 +74,8 @@ def blog():
             blogs=blogs, users=users)
 
 
+#checks that the title and body have been filled, and if they have
+#writes that to the database as an object on the blog table
 @app.route('/newpost', methods=['GET', 'POST'])
 def newpost():
     if request.method == 'POST':
@@ -102,6 +109,8 @@ def newpost():
     return render_template('newpost.html', site_title="Create a Blog Post")
 
 
+#only let the user on certain parts ove the website by restricting
+#which endpoints are allowed
 @app.before_request
 def require_login():
     allowed_routes = ['login', 'blog', 'index', 'signup']
@@ -109,12 +118,15 @@ def require_login():
         return redirect('/login')
 
 
+#removes the username from the session to log the user out
 @app.route('/logout')
 def logout():
     del session['username']
     return redirect('/blog')
 
 
+#checks that the username is in the database, and that the password
+#matches what it last was
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -136,6 +148,8 @@ def login():
     return render_template('login.html')
 
 
+#checks to see if the username has been used before and validates the 
+#username, password, and re-ented password before it signs the user up
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -151,6 +165,9 @@ def signup():
 
         if len(username) < 3:
             flash('Invalid username', 'error')
+        
+        if len(password) < 3:
+            flash('Invalid password', 'error')
 
         existing_user = User.query.filter_by(username=username).first()
         if not existing_user:
@@ -167,5 +184,6 @@ def signup():
     return render_template('signup.html')
 
 
+#runs the application if the program is the main
 if __name__ == '__main__':
     app.run()
